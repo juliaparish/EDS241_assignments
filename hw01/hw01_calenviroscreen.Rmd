@@ -148,6 +148,11 @@ ggplot(data = ces_df, aes(x = pm2_5)) +
 
 ## D. Estimate a OLS regression of LowBirthWeight on PM2.5. Report the estimated slope coefficient and its heteroskedasticity-robust standard error. Interpret the estimated slope coefficient. Is the effect of PM25 on LowBirthWeight statistically significant at the 5%?
 
+\begin{align}
+  Y_{i} = \beta_0 + \beta_1 PM2.5_{1i} + u_{i}
+\end{align}
+
+
 ```{r}
 lbw_model <- estimatr::lm_robust(low_birth_weight ~ pm2_5, data = ces_df)
 
@@ -158,6 +163,11 @@ huxtable::huxreg(lbw_model, error_pos = "right")
 \noindent The effect of PM2.5 concentrations on low birth weight model produces the PM2.5 coefficient of 0.118. The heteroskedasticity-robust standard error is 0.008. **Beta1** equaling 0.118 represents the slope, and is interpreted as for every 1 unit increase in PM2.5 concentration, the birth weight percentage for a census tract increases by 0.118. This effect is statistically significant at the 5% level based on a p-value of less than 0.001.
 
 ## F. Add the variable Poverty as an explanatory variable to the regression in Section 2.4 D. Interpret the estimated coefficient on Poverty. What happens to the estimated coefficient on PM2.5, compared to the regression in Section 2.4 D. Explain.
+
+\begin{align}
+  Y_{i} = \beta_0 + \beta_1 PM2.5_{1i} + \beta_2 Poverty_{2i} + u_{i}
+\end{align}
+
 ```{r}
 pov_model <- estimatr::lm_robust(low_birth_weight ~ pm2_5 + poverty, data = ces_df)
 
