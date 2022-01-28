@@ -1,0 +1,45 @@
+---
+title: "EDS241: Assignment 02 - Air Quality Regulations"
+author: "Julia Parish"
+date: "2022/02/04"
+output: 
+  pdf_document:
+    toc: false
+    number_sections: yes
+header-includes:
+  - \setlength{\parindent}{1em}
+  - \usepackage{float}
+---
+
+```{r setup, include=FALSE}
+# set default chunk options
+knitr::opts_chunk$set(fig.width = 4, fig.height = 3, echo = TRUE, message = FALSE, warning = FALSE)
+
+options(scipen = 10) # not scientific notation
+
+```
+
+# EDS241 Environmental Policy Evaluation Assignment 02
+
+\noindent This statistical analysis was completed as an assignment for the course, Environmental Data Science 241: Environmental Policy Evaluation. The data was sourced from 
+
+**Source:** 
+
+
+## Question A. Make a histogram depicting the distribution of Dnox_masstons.
+
+
+## Question B. Create an indicator =1 if the county has PctBlack above the sample median, and =0 otherwise (in the rest of the assignment, I refer to this variable as ‘D’). What is the average of PctBlack for counties above the median, i.e. counties for which D=1?
+
+
+## Question C. Estimate a regression of Dnox_masstons on NBP. Interpret the estimated intercept and the coefficient on NBP.
+
+
+## Question D. Create an interaction between the variables NBP and D. Estimate a regression of Dnox_masstons on NBP, D, and this interaction. Interpret each estimated regression coefficient, including the intercept.
+
+
+## Question E. What is the predicted Dnox_masstons in a county that was not regulated under NBP and where PctBlack is above the sample median (i.e., where D=1)? Report the 95% confidence interval for this prediction. Make sure to use “heteroskedasticity-robust” standard errors.
+
+
+
+
