@@ -1,0 +1,107 @@
+---
+title: "EDS241: Assignment 03 - "
+author: "Julia Parish"
+date: "2022/02/15"
+output: 
+  pdf_document:
+    toc: false
+    number_sections: yes
+header-includes:
+  - \setlength{\parindent}{1em}
+  - \usepackage{float}
+---
+
+
+```{r setup, include=FALSE}
+# set default chunk options
+knitr::opts_chunk$set(fig.width = 4, fig.height = 3, echo = TRUE, message = FALSE, warning = FALSE)
+
+options(scipen = 10) # not scientific notation
+
+```
+
+```{r, include = FALSE}
+# load packages
+packages = c("stargazer", 
+             "here", 
+             "tidyr",
+             "tidyverse",
+             "dplyr",
+             "stringr", 
+             "janitor", 
+             "cowplot", 
+             "ggplot2", 
+             "tinytex", 
+             "datasets", 
+             "tibble",
+             "rio",
+             "car",
+             "readxl",
+             "estimatr",
+             "patchwork", 
+             "kableExtra",
+             "huxtable")
+
+for (i in packages) {
+  if (require(i,character.only=TRUE)==FALSE) {
+    install.packages(i,repos='http://cran.us.r-project.org')
+  }
+  else {
+    require(i,character.only=TRUE)
+  }
+}
+
+```
+
+
+```{r}
+data <- read_csv(here("hw03/data/smoking.csv"))
+```
+
+Note: This homework is a simple examination of these data. More research would be needed to obtain a more definitive assessment of the causal effect of smoking on infant health outcomes. Further, for this homework, you can ignore the adjustments to the standard errors that are necessary to reflect the fact that the propensity score is estimated. Just use heteroskedasticity robust standard errors in R. If you are interested, you can read Imbens and Wooldridge (2009) and Imbens (2014) for discussions of various approaches and issues with standard error estimations in models based on the propensity score.
+
+
+**Question 1:**\
+Application of estimators based on treatment ignorability
+This exercise asks you to implement some of the techniques presented in Lectures 6-7. 
+
+The goal is to estimate the causal effect of maternal smoking during pregnancy on infant birth weight using the treatment ignorability assumptions. The data are taken from the National Natality Detail Files, and the extract “SMOKING_EDS241.csv”' is a random sample of all births in Pennsylvania during 1989-1991. Each observation is a mother-infant pair. 
+
+The outcome and treatment variables are:
+birthwgt = birth weight of infant in grams
+tobacco = indicator for maternal smoking
+
+
+(a) What is the unadjusted mean difference in birth weight of infants with smoking and non-smoking mothers? Under what hypothesis does this correspond to the average treatment effect of maternal smoking during pregnancy on infant birth weight? Provide some simple empirical evidence for or against this hypothesis.
+
+
+(b) Assume that maternal smoking is randomly assigned conditional on the observable covariates listed above. Estimate the effect of maternal smoking on birth weight using a linear regression. Report the estimated coefficient on tobacco and its standard error.
+
+lm_robust - include all variables all in (age, education are numeric). The way to get cond't avg tx effect, have to have all factors - here add them linearly. If you add age, education as factors creates a number of bins. How do we control these as observables, the easiest way it to include them linearly. 
+
+
+```{r}
+mod2 <- lm_robust(birthwgt ~ ., data = data)
+```
+
+
+
+(c) Use the exact matching estimator to estimate the effect of maternal smoking on birth weight. For simplicity, consider the following covariates in your matching estimator: create a 0-1 indicator for mother's age (=1 if mage>=34), and a 0-1 indicator for mother's education (1 if meduc>=16), mother's race (mblack), and alcohol consumption indicator (alcohol). These 4 covariates will create 2 * 2 * 2 * 2 = 16 cells. Report the estimated average treatment effect of smoking on birthweight using the exact matching estimator and its linear regression analogue (Lecture 6, slides 12-14). *see TIA Table #ydiff = delta for x, w_ATE # of obs for rows, w_ATT = weights*
+
+```{r}
+mod3 <- lm_robust(data = data,
+                  birthwgt ~ tobacco + as.factor(alcohol) + as.factor()
+                  
+                  
+                  )
+```
+
+# linear analogue - saturated model, exact matching estimator: calculating weights 
+
+(d) Estimate the propensity score for maternal smoking using a logit estimator and based on the following specification: mother’s age, mother’s age squared, mother’s education, and indicators for mother’s race, and alcohol consumption.
+
+# create new column for mage squared 
+
+(e) Use the propensity score weighted regression (WLS) to estimate the effect of maternal smoking on birth weight (Lecture 7, slide 12). # see cgl.R, glm is a logit
+
+# 
