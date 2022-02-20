@@ -87,7 +87,8 @@ nn_data <- read_csv(here("hw03/data/smoking.csv")) %>%
 ## Question A:
 
 \noindent What is the unadjusted mean difference in birth weight of infants with smoking and non-smoking mothers? Under what assumption does this correspond to the average treatment effect of maternal smoking during pregnancy on infant birth weight? Provide some simple empirical evidence for or against this assumption.
-For the last part of (a), regress your favorite covariate on the smoking status of mothers. For example, think of regressing meduc ~ tobacco. Is the mean difference in the education level of smoking and non-smoking mothers statistically different from zero? What does that say about the required assumption to interpret the unadjusted mean difference as causal? 
+
+- For the last part of (a), regress your favorite covariate on the smoking status of mothers. For example, think of regressing meduc ~ tobacco. Is the mean difference in the education level of smoking and non-smoking mothers statistically different from zero? What does that say about the required assumption to interpret the unadjusted mean difference as causal? 
 
 ```{r , include=TRUE}
 # calculate the unadjusted mean difference in birth weight of infants with smoking and non-smoking mothers
@@ -164,7 +165,7 @@ mod_b_table
 
 ### Answers\
 
-The estimated effect of maternal smoking on birth weight is a decrease of `r abs(round(mod_b[[1]][[4]], 2))` grams on average. The standard error is `r abs(round(mod_b[[2]][[4]], 2))`. 
+\noindent The estimated effect of maternal smoking on birth weight is a decrease of `r abs(round(mod_b[[1]][[4]], 2))` grams on average. The standard error is `r abs(round(mod_b[[2]][[4]], 2))`. 
 
 ## Question C:
 
@@ -181,7 +182,7 @@ To calculate the exact matching estimator, use this `g` grouping variable and th
 - mother's race (mblack), and 
 - alcohol consumption indicator (alcohol). 
 
-These 4 covariates will create 2 * 2 * 2 * 2 = 16 cells.
+\noindent These 4 covariates will create 2 * 2 * 2 * 2 = 16 cells.
 
 ```{r}
 # create 0-1 indicators for mother's education and age.
@@ -235,37 +236,83 @@ att = sum((tia_table$w_ATT)*(tia_table$birthwgt_diff))
 att
 ```
 
-
 #### Answers\
 
-The average treatment effect of smoking on birthweight using the exact matching estimator is `r ate` grams.
-
-
-
+\noindent The average treatment effect of smoking on birthweight using the exact matching estimator is `r round(ate, 2)` grams.
 
 ## Question D:
 
 \noindent Estimate the propensity score for maternal smoking using a logit estimator and based on the following specification: mother’s age, mother’s age squared, mother’s education, and indicators for mother’s race, and alcohol consumption. glm(formula, family = binomial(), data) is a logit model.
 
+```{r}
+# create a new dataframse and add a new column transforming the age variable by squaring it
 
+propensity_data <- matching_nn_data %>% 
+  mutate(mage_sq = mage^2) %>% 
+  select(tobacco, 
+         mage, 
+         mage_sq, 
+         meduc, 
+         mblack,
+         birthwgt,
+         alcohol)
 
+```
+
+```{r}
+# ESTIMATE PROPENSITY SCORE MODEL
+
+propensity_model <- glm(tobacco ~ mage + mage_sq + meduc + mblack + alcohol,
+                        family = binomial(),
+                        data = propensity_data)
+```
+
+```{r}
+# create new EPS variable for the estimated propensity score
+eps <- predict(propensity_model, type = "response") 
+
+eps_sample <- head(eps, 5) # sample eps
+
+```
 
 ### Answers\
 
-
+A sample (n = 5) of the estimated propensity score for maternal smoking during pregnancy using a logit estimator (glm) are `r eps_sample`.
+\newpage
 
 ## Question E:
 
-\noindent Use the propensity score weighted regression (WLS) to estimate the effect of maternal smoking on birth weight (Lecture 7, slide 12). # see cgl.R, glm is a logit
+\noindent Use the propensity score weighted regression (WLS) to estimate the effect of maternal smoking on birth weight (Lecture 7, slide 12). *See CGL.R lab*
+
+```{r}
+# create new variable for the weighted propensity score
+ps_wgt <- (propensity_data$tobacco / eps) + 
+  ((1 - propensity_data$tobacco) / (1 - eps)) 
+
+wgt_sample <- head(eps, 5) # sample weighted propensity score
+```
 
 
+```{r}
+# propensity score weighted regression (WLS) lm(formula = Y ~ D + X1 …, data=DF, weights=wgt)
 
+mod_wgt <- lm_robust(birthwgt ~ tobacco, data = propensity_data, weights = ps_wgt)
+summary(mod_wgt)
+```
 
+```{r}
+# create propensity score weighted regression table
+mod_wgt_table <- tidy(mod_wgt)
 
+mod_wgt_table %>%
+  select(term, estimate, std.error, p.value, conf.low, conf.high) %>% 
+  kable()
 
+```
 
 ### Answers\
 
+\noindent To create a weighted propensity score, weights were assigned as shown in variable, `ps_wgt`. A sample (n = 5) of the weighted propensity score for maternal smoking during pregnancy are `r wgt_sample`.
 
-
+\noindent The estimated effect of maternal smoking on birth weight using `WLS` is a decrease in infant birth weight of `r abs(round(mod_wgt[[1]][[2]], 2))` grams on average compared to infants born to mothers who do not smoke. 
 
