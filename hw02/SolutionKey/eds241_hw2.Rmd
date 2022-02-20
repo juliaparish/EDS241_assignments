@@ -1,0 +1,164 @@
+---
+title: "EDS241: HW2 solution key _(15 pts)_"
+author: "Vincent Thivierge"
+date: '`r format(Sys.time(), "%m/%d/%Y")`'
+output: 
+  pdf_document:
+    toc: false
+    number_sections: yes
+header-includes:
+  \setlength{\parindent}{1em}
+  \usepackage{float}
+  \renewcommand{\thesection}{Question (\alph{section})}
+--- 
+  
+``` {r setup, echo = FALSE, message = FALSE, warning = FALSE}
+
+# set default chunk options
+knitr::opts_chunk$set(fig.width = 4, fig.height = 3, 
+                      echo = TRUE, message = FALSE, warning = FALSE)
+
+
+# load packages
+packages=c("janitor", "readxl", "data.table", "tidyr", "dplyr",
+           "stargazer", "estimatr", "sandwich", "ggplot2", "cowplot",
+           "lmtest","sandwich","huxtable", "car", "here")
+
+for (i in packages) {
+  if (!(i %in% installed.packages())) {
+    install.packages(i,dependencies = TRUE)
+  }
+  if (!(i %in% .packages())) {
+    library(i, character.only = TRUE)
+  }
+}
+
+#devtools::install_github('rstudio/rmarkdown')
+options(scipen=999) # not scientific notation
+
+
+```
+
+<!-- In this assignment, we use some of the underlying data of the \href{https://oehha.ca.gov/calenviroscreen/report/calenviroscreen-40}{CalEnviroScreen 4.0} to study the relationship between the percentage of low birth rates and ambient pollution in census tracts in California.  -->
+
+\medskip
+
+\noindent The following code chunk loads the data and converts our columns of interests in numeric format. 
+
+```{r , include=TRUE}
+
+# Load data
+
+nbp_data <- read_excel("NBP.xls", sheet = 1)%>%
+  clean_names()
+
+```
+
+# Histogram _(1 pt)_
+
+<!-- Figure 1 and 2 show the distribution of low birth rate percentages and PM$_{2.5}$ concentration in California census tracts. Figure 1 shows that low birth rates appear normally distributed, whereas PM$_{2.5}$ is moreso bimodaly distributed.   -->
+
+```{r , include=TRUE}
+
+hist <- nbp_data%>%
+ggplot(aes(dnox_masstons))+
+  geom_histogram()+
+  theme_cowplot(12)+
+  labs(x = "Changes in NOx tons between 2000 and 2008", y = "Number of counties")
+
+```
+
+<center>**Figure 1: Distribution of county NOx tons changes between 2000 and 2008**</center>
+```{r , fig.width = 4, fig.height = 3, eval=TRUE, echo=FALSE}
+hist
+```
+
+\newpage
+
+# Conditional mean _(1 pt)_
+
+```{r , include = TRUE, results = 'asis'}
+
+# Create dummy variable
+
+nbp_data <- nbp_data %>%
+  mutate(d = ifelse(pct_black>median(pct_black), 1,0))
+
+# Calculate and store conditional mean
+
+cond_mean <- nbp_data %>%
+  filter(d==1)%>%
+  summarise(value = mean(pct_black))%>%
+  slice_head(n=1)
+
+```
+
+\noindent The average percent African Americans for counties above the median is `r round(cond_mean$value)`\%.
+
+
+# Regression _(1 pt for estimation, 1 pt for standard error, 1 pt for interpretation of each coefficient)_
+
+
+```{r , include = TRUE, results = 'asis'}
+
+model1 <- lm(dnox_masstons ~ nbp, nbp_data)
+
+se_model1 = starprep(model1,  stat = c("std.error"), se_type = "HC2", alpha = 0.05)
+
+stargazer(model1, se = se_model1, 
+          type = "latex", ci=FALSE, no.space = TRUE, 
+          header = FALSE,  omit.stat = c("adj.rsq","ser", "f"),
+          covariate.labels = c("NOx Budget Program (NBP)"), 
+          dep.var.labels = c("Change in NOx (tons)"),
+          dep.var.caption = c(""),
+          title = "NOx budget program", table.placement = "H",
+          notes = "Robust standard errors in parantheses", notes.align = "l")
+
+```
+
+* The intercept: The average NOx emissions for unregulated countries reduced by `r round(model1$coefficients["(Intercept)"][[1]],digit=2)` tons between 2000 and 2008.
+
+* The coefficient on NBP: This coefficient can be interpreted as the average difference in NOx emission changes between NBP covered counties and unregulated counties. In other words, the NBP had an effect of `r round(model1$coefficients["nbp"][[1]],digit=2)` tons on regulated county NOx emissions compared to unregulated counties. 
+
+# Interacted regression _(1 pt for estimation, 1 pt for standard error, 1 pt for interpretation of each coefficient)_
+
+```{r , include = TRUE, results = 'asis'}
+
+model2 <- lm(dnox_masstons ~ nbp*factor(d), nbp_data)
+
+se_model2 = starprep(model2,  stat = c("std.error"), se_type = "HC2", alpha = 0.05)
+
+stargazer(model2, se = se_model2, 
+          type = "latex", ci=FALSE, no.space = TRUE, 
+          header = FALSE,  omit.stat = c("adj.rsq","ser", "f"),
+          covariate.labels = c("NOx Budget Program (NBP)", "Above median black percentage", 
+                               "NBP X Above median black percentage"), 
+          dep.var.labels = c("Change in NOx (tons)"),
+          dep.var.caption = c(""),
+          title = "NOx budget program and county population demographics", table.placement = "H",
+          notes = "Robust standard errors in parantheses", notes.align = "l")
+
+```
+
+
+* The intercept: Average NOx emissions for unregulated white counties reduced by `r round(model2$coefficients["(Intercept)"][[1]],digit=2)` tons between 2000 and 2008.
+
+* The coefficient on NBP: Average NOx emissions for regulated white counties changed by `r round(model2$coefficients["nbp"][[1]],digit=2)` compared to unregulated white counties. It is the effect of the NBP on NOx emission change for white counties. 
+
+* The coefficient on the Above median black indicator: The average difference in NOx emission changes between unregulated African American and white counties was of `r round(model2$coefficients["factor(d)1"][[1]],digit=2)` tons between 2000 and 2008. It is the effect of race on NOx emission changes for unregulated counties.   
+
+* The coefficient on the interaction: It is the difference between the effect of the NBP on emission changes among white counties and among African American counties. Alternatively, it can also be interpreted as the difference between the effects of race on emissions changes among regulated and among unregulated counties. The coefficient implies that the NBP had a `r round(model2$coefficients["nbp:factor(d)1"][[1]],digit=2)` ton greater emission reduction effect in white versus African American counties. 
+
+# Predicted confidence interval _(1 pt for estimation, 1 pt for standard errors, 1 pt for interpretation)_
+
+
+```{r , include = TRUE, results = 'asis'}
+model2 <- lm_robust(dnox_masstons ~ nbp*factor(d), nbp_data)
+
+pred_NBP <- data.frame(nbp=0, d=1)
+
+conf_int <- predict(model2, newdata=pred_NBP, se.fit=TRUE, interval='confidence')
+
+```
+
+We are 95\% "confident" that the true average changes in NOx tons between 2000 and 2008 for an unregulated county above the black percentage median is between `r round(conf_int$fit[2],2)` and `r round(conf_int$fit[3],2)` tons.
