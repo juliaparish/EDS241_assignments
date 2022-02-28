@@ -1,0 +1,96 @@
+---
+title: "EDS241: Assignment 04 - Price Elasticity"
+author: "Julia Parish"
+date: "2022/03/11"
+output: 
+  pdf_document:
+    toc: false
+    number_sections: yes
+header-includes:
+  - \setlength{\parindent}{1em}
+  - \usepackage{float}
+---
+
+```{r setup, include=FALSE}
+# set default chunk options
+knitr::opts_chunk$set(fig.width = 4, fig.height = 3, echo = TRUE, message = FALSE, warning = FALSE)
+
+options(scipen = 999) # not scientific notation
+
+```
+
+```{r}
+# load packages
+packages = c("stargazer", 
+             "here",
+             "tidyverse",
+             "stringr", 
+             "janitor", 
+             "cowplot", 
+             "tinytex", 
+             "datasets", 
+             "tibble",
+             "rio",
+             "car",
+             "readxl",
+             "estimatr",
+             "patchwork", 
+             "kableExtra",
+             "huxtable")
+
+for (i in packages) {
+  if (require(i,character.only=TRUE)==FALSE) {
+    install.packages(i,repos='http://cran.us.r-project.org')
+  }
+  else {
+    require(i,character.only=TRUE)
+  }
+}
+
+```
+
+# EDS241 Environmental Policy Evaluation Assignment 04
+
+\noindent This statistical analysis was completed as an assignment for the course, Environmental Data Science 241: Environmental Policy Evaluation. 
+
+This question will ask you to estimate the price elasticity of demand for fresh sardines across 56 ports located in 4 European countries with monthly data from 2013 to 2019. 
+
+# Homework Questions
+
+## Question A:
+
+\noindent Estimate a bivariate regression of log(volume_sold_kg) on log(price euro_kg). What is the price elasticity of demand for sardines? Test the null hypothesis that the price elasticity is equal to -1.
+
+
+### Answers\
+
+\noindent
+
+
+## Question B:
+
+\noindent Like in Lecture 8 (see the IV.R script), we will use wind_m_s as an instrument for log(price_euro_kg). To begin, estimate the first-stage regression relating log(price_euro_kg) to wind_m_s. Interpret the estimated coefficient on wind speed. Does it have the expected sign? Also test for the relevance of the instrument and whether it is a “weak” instrument by reporting the proper F-statistic.
+
+
+### Answers\
+
+\noindent
+
+## Question C:
+
+\noindent Estimate the TSLS estimator of the price elasticity of demand for sardines using wind_m_s as an instrument for log(price_euro_kg). What is the estimated price elasticity of demand for sardines?
+
+
+### Answers\
+
+\noindent
+
+
+## Question D:
+
+\noindent Repeat the exercise in (c), but include fixed effects for each year, month, and country. [Hint: you can use the command “as.factor(country) + as.factor(year) +as.factor(month)” to the ivreg function in R]. Report the estimated price elasticity of demand and the F-statistic testing for relevant and non-weak instruments.
+
+
+### Answers\
+
+\noindent
