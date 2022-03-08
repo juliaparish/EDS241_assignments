@@ -102,9 +102,9 @@ sardines_log <- sardines_df %>%
 
 ```{r}
 # linear regression on log data
-pe_model <- lm_robust(log_volume_sold_kg ~ log_price_euro_kg, data = sardines_log)
+pe_mod01 <- lm_robust(log_volume_sold_kg ~ log_price_euro_kg, data = sardines_log)
 
-summary(pe_model)
+summary(pe_mod01)
 ```
 
 ```{r}
@@ -112,12 +112,20 @@ elasticity <- round(pe_model$coefficients[[2]], 2)
 ```
 
 ```{r}
-pe_mod_table <- tidy(pe_model)
+pe_mod_table <- tidy(pe_mod01)
 
 pe_mod_table %>% 
   select(term, estimate, std.error, p.value, conf.low, conf.high) %>%
   kable()
 ```
+
+```{r}
+#pe_mod02 <- linearHypothesis(pe_mod01, c(" "), white.adjust = "hc2")
+
+#summary(pe_mod02)
+```
+
+
 ### Answers\
 
 \noindent The price elasticity of demand for sardines is estimated to be `r elasticity`. With 95% confidence, the price elasticity coefficient is contained by the range `r round(pe_model$conf.low[[2]], 2)` to `r round(pe_model$conf.high[[2]], 2)`. The null hypothesis that price elasticity is equal to -1 can be rejected as it is not within the coefficient range. 
