@@ -202,5 +202,5 @@ huxtable(pw_mod03_f)
 
 ### Answers\
 
-\noindent The estimated price elasticity for demand of sardines using wind (meter per sec) as an instrument for log_price, including fixed effects for each year, month, and country is `r round(tsls_mod02$coefficients[[2]], 2)`. The F-statistic is `r round(pw_mod03_f[[3]][2], 2)`. 
+\noindent The estimated price elasticity for demand of sardines using wind (meter per sec) as an instrument for log_price, including fixed effects for each year, month, and country is `r round(tsls_mod02$coefficients[[2]], 2)`. The F-statistic for the wind speed is `r round(pw_mod03_f[[3]][2], 2)`. 
 
